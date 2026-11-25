@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Recommended for you')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="page-head">
+        <div>
+            <h1>Recommended for you</h1>
+            <p>Dishes with a known allergen conflict are never shown here. Ranking uses your diet, spice level and favourite cuisines.</p>
+        </div>
+    </div>
+    <div class="empty-state" th:if="${#lists.isEmpty(recommendations)}">
+        <i class="bi bi-stars"></i>
+        <h2>No recommendations yet</h2>
+        <p>Complete your food profile to get picks that suit you.</p>
+        <a class="btn btn-success" th:href="@{/profile}">Open food profile</a>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4" th:each="r, st : ${recommendations}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex gap-3 align-items-start mb-2">
+                        <span class="rank" th:text="${st.count}">1</span>
+                        <div class="flex-grow-1">
+                            <h2 class="h6 mb-1" th:text="${r.item().name()}">Dish</h2>
+                            <div class="small text-muted" th:text="${r.item().restaurantName() + ' · ' + r.item().cuisine()}">Restaurant</div>
+                        </div>
+                        <strong class="text-nowrap" th:text="|₹${#numbers.formatDecimal(r.item().price(), 1, 2)}|">0</strong>
+                    </div>
+                    <ul class="reason-list mt-3"><li th:each="reason : ${r.reasons()}" th:text="${reason}">reason</li></ul>
+                </div>
+                <div class="card-footer">
+                    <a class="btn btn-success btn-sm" th:href="@{/restaurants/{id}(id=${r.item().restaurantId()})}">View menu <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

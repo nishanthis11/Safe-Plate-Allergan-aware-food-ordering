@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Order')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="h3 mb-1" th:text="${order.orderNumber()}">SF-1</h1>
+            <div class="text-muted" th:text="${order.customerName() + ' · ' + #temporals.format(order.createdAt(), 'dd MMM yyyy HH:mm')}">info</div>
+        </div>
+        <span th:replace="~{fragments/layout :: statusBadge(${order.status()})}"></span>
+    </div>
+
+    <div class="alert alert-danger" th:if="${!#lists.isEmpty(order.warnings())}">
+        <strong>Allergen and dietary warnings for this order</strong>
+        <div class="small mt-1" th:each="w : ${order.warnings()}">
+            <span th:replace="~{fragments/layout :: warningBadge(${w.type()})}"></span>
+            <span th:text="${w.itemName() + ': ' + w.message()}">warning</span>
+        </div>
+        <div class="small mt-2" th:if="${order.warningsAcknowledged()}">The customer acknowledged these warnings. Take extra care with preparation.</div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card"><div class="card-body">
+                <h2 class="h5">Items</h2>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item px-0" th:each="i : ${order.items()}">
+                        <strong th:text="${i.quantity() + ' x ' + i.name()}">1 x Dish</strong>
+                        <div class="small text-muted" th:if="${i.allergens()}" th:text="${'Allergens: ' + i.allergens()}"></div>
+                        <div class="small" th:if="${i.specialInstructions()}" th:text="${'Note: ' + i.specialInstructions()}"></div>
+                    </li>
+                </ul>
+            </div></div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card mb-3"><div class="card-body">
+                <h2 class="h5">Delivery</h2>
+                <div class="small" th:text="${order.deliveryAddress()}">address</div>
+                <div class="small text-muted" th:text="${order.deliveryPhone()}">phone</div>
+                <div class="small mt-2" th:if="${order.paymentMethod()}"
+                     th:text="${'Payment: ' + order.paymentMethod().name() + ' (' + order.paymentStatus().name() + ')'}">payment</div>
+            </div></div>
+            <form th:if="${!#lists.isEmpty(order.nextStatuses())}" th:object="${statusForm}"
+                  th:action="@{${basePath} + '/orders/' + ${order.id()} + '/status'}" method="post" class="card card-body mb-3">
+                <h2 class="h5">Update status</h2>
+                <select class="form-select mb-2" th:field="*{status}" aria-label="New status">
+                    <option th:each="s : ${order.nextStatuses()}" th:value="${s}" th:text="${s.name().replace('_', ' ')}">x</option>
+                </select>
+                <input type="text" class="form-control mb-2" th:field="*{note}" maxlength="250" placeholder="Note (optional)">
+                <button class="btn btn-success btn-sm" type="submit">Update</button>
+            </form>
+            <div class="card"><div class="card-body">
+                <h2 class="h5">Timeline</h2>
+                <ul class="list-unstyled small mb-0 timeline">
+                    <li class="mb-1" th:each="h : ${order.history()}">
+                        <strong th:text="${h.toStatus().name().replace('_', ' ')}">STATUS</strong>
+                        <span class="text-muted" th:text="${#temporals.format(h.at(), 'dd MMM HH:mm') + ' · ' + h.changedBy()}">time</span>
+                    </li>
+                </ul>
+            </div></div>
+        </div>
+    </div>
+    <a class="btn btn-link mt-3 ps-0" th:href="@{${basePath}}">Back</a>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

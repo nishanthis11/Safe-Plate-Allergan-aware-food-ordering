@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My orders')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="page-head">
+        <div>
+            <h1>My orders</h1>
+            <p>Track current orders and review past ones.</p>
+        </div>
+    </div>
+    <div class="empty-state" th:if="${#lists.isEmpty(orders)}">
+        <i class="bi bi-receipt"></i>
+        <h2>No orders yet</h2>
+        <p>When you place an order, it will show up here.</p>
+        <a class="btn btn-success" th:href="@{/restaurants}">Browse restaurants</a>
+    </div>
+    <div class="table-responsive" th:if="${!#lists.isEmpty(orders)}">
+        <table class="table align-middle">
+            <thead><tr><th>Order</th><th>Restaurant</th><th>Placed</th><th>Status</th><th class="text-end">Total</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="o : ${orders}">
+                <td class="fw-bold" th:text="${o.orderNumber()}">SF-1</td>
+                <td th:text="${o.restaurantName()}">Restaurant</td>
+                <td class="text-muted" th:text="${#temporals.format(o.createdAt(), 'dd MMM yyyy HH:mm')}">date</td>
+                <td><span th:replace="~{fragments/layout :: statusBadge(${o.status()})}"></span></td>
+                <td class="text-end fw-bold" th:text="|₹${#numbers.formatDecimal(o.total(), 1, 2)}|">0</td>
+                <td class="text-end"><a class="btn btn-outline-success btn-sm" th:href="@{/orders/{id}(id=${o.id()})}">Details</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

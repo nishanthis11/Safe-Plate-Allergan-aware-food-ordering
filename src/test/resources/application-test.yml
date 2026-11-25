@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:smartfood;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: "97142hsin"
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+app:
+  seed:
+    enabled: false
+    admin-password: Admin@12345

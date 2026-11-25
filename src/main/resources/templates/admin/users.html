@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Users')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-3">Users</h1>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="table-responsive">
+                <table class="table table-sm bg-white border align-middle">
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Restaurant</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="u : ${users}">
+                        <td th:text="${u.fullName()}">Name</td>
+                        <td th:text="${u.email()}">email</td>
+                        <td th:text="${u.roles()}">role</td>
+                        <td th:text="${u.restaurantName()}">restaurant</td>
+                        <td class="text-end">
+                            <form th:action="@{/admin/users/{id}/enabled(id=${u.id()})}" method="post">
+                                <input type="hidden" name="enabled" th:value="${!u.enabled()}">
+                                <button class="btn btn-sm" th:classappend="${u.enabled()} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                        type="submit" th:text="${u.enabled()} ? 'Disable' : 'Enable'">Disable</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <form th:action="@{/admin/users}" th:object="${staffForm}" method="post" class="card card-body" novalidate>
+                <h2 class="h5">Create staff account</h2>
+                <div class="alert alert-danger small" th:if="${#fields.hasGlobalErrors()}">
+                    <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">error</div>
+                </div>
+                <div class="mb-2"><label class="form-label" for="fullName">Full name</label>
+                    <input class="form-control" th:field="*{fullName}" th:errorclass="is-invalid">
+                    <div class="invalid-feedback" th:errors="*{fullName}"></div></div>
+                <div class="mb-2"><label class="form-label" for="email">Email</label>
+                    <input class="form-control" type="email" th:field="*{email}" th:errorclass="is-invalid">
+                    <div class="invalid-feedback" th:errors="*{email}"></div></div>
+                <div class="mb-2"><label class="form-label" for="password">Password</label>
+                    <input class="form-control" type="password" th:field="*{password}" th:errorclass="is-invalid" autocomplete="new-password">
+                    <div class="invalid-feedback" th:errors="*{password}"></div></div>
+                <div class="mb-2"><label class="form-label" for="role">Role</label>
+                    <select class="form-select" th:field="*{role}">
+                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r.name().replace('ROLE_', '').replace('_', ' ')}">x</option>
+                    </select></div>
+                <div class="mb-3"><label class="form-label" for="restaurantId">Restaurant</label>
+                    <select class="form-select" th:field="*{restaurantId}">
+                        <option th:each="r : ${restaurants}" th:value="${r.id()}" th:text="${r.name()}">x</option>
+                    </select></div>
+                <button class="btn btn-success" type="submit">Create</button>
+            </form>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

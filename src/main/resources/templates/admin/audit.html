@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Audit log')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <h1 class="h3 mb-3">Audit log <small class="text-muted fs-6">(latest 100)</small></h1>
+    <div class="table-responsive">
+        <table class="table table-sm bg-white border">
+            <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th><th>IP</th></tr></thead>
+            <tbody>
+            <tr th:each="e : ${entries}">
+                <td class="text-nowrap" th:text="${#temporals.format(e.at(), 'dd MMM HH:mm:ss')}">time</td>
+                <td th:text="${e.actor()}">actor</td>
+                <td><span class="badge text-bg-secondary" th:text="${e.action().name()}">ACTION</span></td>
+                <td th:text="${e.entityType() != null ? e.entityType() + ' #' + e.entityId() : ''}">entity</td>
+                <td class="small" th:text="${e.details()}">details</td>
+                <td class="small" th:text="${e.ipAddress()}">ip</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Order')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="h3 mb-1" th:text="${order.orderNumber()}">SF-1</h1>
+            <div class="text-muted" th:text="${order.restaurantName() + ' · ' + #temporals.format(order.createdAt(), 'dd MMM yyyy HH:mm')}">info</div>
+        </div>
+        <span th:replace="~{fragments/layout :: statusBadge(${order.status()})}"></span>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card mb-3"><div class="card-body">
+                <h2 class="h5">Items</h2>
+                <div class="table-responsive"><table class="table table-sm mb-0">
+                    <tbody>
+                    <tr th:each="i : ${order.items()}">
+                        <td><span th:text="${i.quantity() + ' x ' + i.name()}">1 x Dish</span>
+                            <div class="small text-muted" th:if="${i.allergens()}" th:text="${'Allergens: ' + i.allergens()}"></div>
+                            <div class="small text-muted" th:if="${i.specialInstructions()}" th:text="${'Note: ' + i.specialInstructions()}"></div></td>
+                        <td class="text-end" th:text="|₹${#numbers.formatDecimal(i.lineTotal(), 1, 2)}|">0</td>
+                    </tr>
+                    </tbody>
+                </table></div>
+                <hr>
+                <div class="d-flex justify-content-between small"><span>Subtotal</span><span th:text="|₹${#numbers.formatDecimal(order.subtotal(), 1, 2)}|">0</span></div>
+                <div class="d-flex justify-content-between small"><span>Tax</span><span th:text="|₹${#numbers.formatDecimal(order.tax(), 1, 2)}|">0</span></div>
+                <div class="d-flex justify-content-between small"><span>Delivery</span><span th:text="|₹${#numbers.formatDecimal(order.deliveryFee(), 1, 2)}|">0</span></div>
+                <div class="d-flex justify-content-between fw-bold"><span>Total</span><span th:text="|₹${#numbers.formatDecimal(order.total(), 1, 2)}|">0</span></div>
+            </div></div>
+            <div class="card mb-3" th:if="${!#lists.isEmpty(order.warnings())}"><div class="card-body">
+                <h2 class="h5">Warnings recorded with this order</h2>
+                <div class="small mb-1" th:each="w : ${order.warnings()}">
+                    <span th:replace="~{fragments/layout :: warningBadge(${w.type()})}"></span>
+                    <span th:text="${w.itemName() + ': ' + w.message()}">warning</span>
+                </div>
+            </div></div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card mb-3"><div class="card-body">
+                <h2 class="h5">Delivery</h2>
+                <div class="small" th:text="${order.deliveryAddress()}">address</div>
+                <div class="small text-muted" th:text="${order.deliveryPhone()}">phone</div>
+                <hr>
+                <h2 class="h5">Payment</h2>
+                <div class="small" th:if="${order.paymentMethod()}"
+                     th:text="${order.paymentMethod().name() + ' · ' + order.paymentStatus().name()}">UPI</div>
+            </div></div>
+            <div class="card mb-3"><div class="card-body">
+                <h2 class="h5">Timeline</h2>
+                <ul class="list-unstyled small mb-0 timeline">
+                    <li class="mb-1" th:each="h : ${order.history()}">
+                        <strong th:text="${h.toStatus().name().replace('_', ' ')}">STATUS</strong>
+                        <span class="text-muted" th:text="${#temporals.format(h.at(), 'dd MMM HH:mm')}">time</span>
+                        <div class="text-muted" th:if="${h.note()}" th:text="${h.note()}"></div>
+                    </li>
+                </ul>
+            </div></div>
+            <form th:if="${order.cancellable()}" th:action="@{/orders/{id}/cancel(id=${order.id()})}" method="post" class="card card-body">
+                <label class="form-label small" for="reason">Cancel this order</label>
+                <input class="form-control mb-2" type="text" id="reason" name="reason" maxlength="250" placeholder="Reason (optional)">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Cancel order</button>
+            </form>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

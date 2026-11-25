@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity">
+<head th:replace="~{fragments/layout :: head('Home')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<section class="hero">
+    <div class="container position-relative">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <span class="hero-eyebrow"><i class="bi bi-shield-check"></i> Allergen-aware food ordering</span>
+                <h1 class="hero-title">Order food that is <span>safe for you</span></h1>
+                <p class="hero-sub">Save your allergies and diet once. We check every dish against your profile before it ever reaches your cart.</p>
+                <form class="hero-search" role="search">
+                    <i class="bi bi-search"></i>
+                    <input type="search" id="restaurantSearch" placeholder="Search restaurants or cuisines" aria-label="Search restaurants or cuisines" autocomplete="off">
+                    <button type="submit" class="btn btn-accent">Search</button>
+                </form>
+                <div class="hero-cta" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-light-glass" th:href="@{/register}"><i class="bi bi-person-plus me-2"></i>Create an account</a>
+                    <a class="btn btn-light-glass" th:href="@{/login}">Log in</a>
+                </div>
+                <ul class="hero-stats">
+                    <li><strong th:text="${#lists.size(restaurants)}">8</strong>restaurants</li>
+                    <li><strong>4</strong>safety checks</li>
+                    <li><strong>2</strong>server checks per order</li>
+                </ul>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="mock-card one">
+                        <div class="mock-head"><span class="mock-ico">🍢</span><div><strong>Chicken Satay with Peanut Sauce</strong><small>Green Leaf Kitchen</small></div></div>
+                        <div class="mock-flag bad"><i class="bi bi-x-octagon-fill"></i> Contains peanut: on your allergy list</div>
+                        <span class="mock-btn off">Not safe for you</span>
+                    </div>
+                    <div class="mock-card two">
+                        <div class="mock-head"><span class="mock-ico">🥣</span><div><strong>Millet Khichdi</strong><small>Green Leaf Kitchen</small></div></div>
+                        <div class="mock-flag good"><i class="bi bi-shield-check"></i> No warnings for your profile</div>
+                        <span class="mock-btn on">Add to cart</span>
+                    </div>
+                    <span class="mock-tag">Illustration: example profile with a peanut allergy</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <!-- Restaurants -->
+    <section class="section" id="restaurants" style="padding-top: 1.5rem;">
+        <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+            <div>
+                <h2 class="section-title mb-1">Restaurants</h2>
+                <span class="result-count" id="restaurantCount" th:text="${#lists.size(restaurants)} + ' restaurants'">0 restaurants</span>
+            </div>
+        </div>
+        <div class="filter-bar mb-4" id="cuisineChips" aria-label="Filter by cuisine"></div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(restaurants)}">
+            <i class="bi bi-shop"></i>
+            <h2>No restaurants are open right now</h2>
+            <p class="mb-0">Please check back soon.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-4 js-rest" th:each="r : ${restaurants}" th:attr="data-cuisine=${r.cuisine()}">
+                <a class="rest-card" th:href="@{/restaurants/{id}(id=${r.id()})}">
+                    <div class="rc-banner cuisine-theme" th:attr="data-cuisine=${r.cuisine()}">
+                        <span class="rc-chip" th:text="${r.cuisine()}">Cuisine</span>
+                    </div>
+                    <div class="rc-body">
+                        <h3 th:text="${r.name()}">Name</h3>
+                        <p class="rc-desc" th:text="${r.description()}">Description</p>
+                        <div class="rc-meta">
+                            <span th:if="${r.address()}"><i class="bi bi-geo-alt-fill"></i><span th:text="${r.address()}">Address</span></span>
+                            <span><i class="bi bi-bicycle"></i><span th:text="${r.deliveryFee().signum() == 0} ? 'Free delivery' : |₹${#numbers.formatDecimal(r.deliveryFee(), 1, 2)} delivery|">Delivery</span></span>
+                        </div>
+                    </div>
+                    <div class="rc-foot">
+                        <span class="rc-safe"><i class="bi bi-shield-check me-1"></i>Allergen-checked</span>
+                        <span class="rc-go">View menu <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="empty-state d-none" id="restaurantEmpty">
+            <i class="bi bi-search"></i>
+            <h2>No restaurants match your search</h2>
+            <p class="mb-0">Try a different name or pick another cuisine.</p>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section">
+        <h2 class="section-title">How SafePlate works</h2>
+        <p class="section-sub mb-4">Three steps from sign-up to a safe meal.</p>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card step-card"><span class="step-num">1</span>
+                    <div class="icon-tile"><i class="bi bi-person-vcard"></i></div>
+                    <h3 class="h5">Build your food profile</h3>
+                    <p class="text-muted mb-0">Add your allergies, diet, spice level and ingredients to avoid. You only do it once.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card step-card"><span class="step-num">2</span>
+                    <div class="icon-tile warn"><i class="bi bi-search-heart"></i></div>
+                    <h3 class="h5">Browse with live checks</h3>
+                    <p class="text-muted mb-0">Every dish is compared to your profile, with clear warnings shown right on the menu.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card step-card"><span class="step-num">3</span>
+                    <div class="icon-tile info"><i class="bi bi-bag-check"></i></div>
+                    <h3 class="h5">Order with confidence</h3>
+                    <p class="text-muted mb-0">The server re-checks your cart at checkout, and the warnings are saved with your order.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Safety labels -->
+    <section class="section">
+        <h2 class="section-title">Safety you can see</h2>
+        <p class="section-sub mb-4">Four kinds of warnings keep you informed and in control.</p>
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card safety-card"><div class="icon-tile danger"><i class="bi bi-x-octagon"></i></div>
+                    <h3><span class="badge text-bg-danger">KNOWN CONFLICT</span></h3>
+                    <p>The dish declares an allergen on your list. It cannot be added to your cart.</p></div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card safety-card"><div class="icon-tile warn"><i class="bi bi-exclamation-triangle"></i></div>
+                    <h3><span class="badge text-bg-warning">POSSIBLE CONFLICT</span></h3>
+                    <p>Cross-contact is possible, or an ingredient commonly carries your allergen.</p></div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card safety-card"><div class="icon-tile info"><i class="bi bi-leaf"></i></div>
+                    <h3><span class="badge text-bg-info">DIETARY MISMATCH</span></h3>
+                    <p>An ingredient breaks your diet or is on your avoid list.</p></div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card safety-card"><div class="icon-tile muted"><i class="bi bi-question-circle"></i></div>
+                    <h3><span class="badge text-bg-secondary">INFORMATION INCOMPLETE</span></h3>
+                    <p>The restaurant has not confirmed the ingredient and allergen details yet.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-band" sec:authorize="!isAuthenticated()">
+        <div>
+            <h2>Ready for worry-free ordering?</h2>
+            <p>Create a free account and set up your food profile in minutes.</p>
+        </div>
+        <a class="btn btn-light btn-lg fw-bold" th:href="@{/register}">Get started</a>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

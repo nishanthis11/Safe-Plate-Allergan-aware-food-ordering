@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${restaurant.name()})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<section class="rest-hero cuisine-theme" th:attr="data-cuisine=${restaurant.cuisine()}">
+    <div class="container">
+        <a class="back-link" th:href="@{/restaurants}"><i class="bi bi-arrow-left"></i> All restaurants</a>
+        <div>
+            <span class="pill"><i class="bi bi-tag-fill"></i><span th:text="${restaurant.cuisine()}">Cuisine</span></span>
+            <h1 th:text="${restaurant.name()}">Restaurant</h1>
+            <p th:text="${restaurant.description()}">Description</p>
+            <div>
+                <span class="pill" th:if="${restaurant.address()}"><i class="bi bi-geo-alt-fill"></i><span th:text="${restaurant.address()}">Address</span></span>
+                <span class="pill"><i class="bi bi-bicycle"></i><span th:text="${restaurant.deliveryFee().signum() == 0} ? 'Free delivery' : |₹${#numbers.formatDecimal(restaurant.deliveryFee(), 1, 2)} delivery|">Delivery</span></span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main class="container pb-4">
+    <div class="menu-toolbar">
+        <div class="menu-search">
+            <i class="bi bi-search"></i>
+            <input type="search" id="dishSearch" class="form-control" placeholder="Search dishes" aria-label="Search dishes" autocomplete="off">
+        </div>
+        <div class="form-check form-switch mb-0" th:if="${isCustomer}">
+            <input class="form-check-input" type="checkbox" role="switch" id="safeOnly">
+            <label class="form-check-label small fw-bold" for="safeOnly">Hide dishes with warnings</label>
+        </div>
+        <span class="result-count ms-auto" id="dishCount">0 dishes</span>
+        <div class="filter-bar w-100" id="dishChips" aria-label="Filter by cuisine"></div>
+    </div>
+
+    <div class="mt-4">
+        <div th:replace="~{fragments/layout :: flash}"></div>
+        <div class="notice info mb-4" th:if="${!isCustomer}">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>Log in as a customer to see allergen and dietary warnings checked against your food profile.
+                <a class="fw-bold" th:href="@{/login}">Log in</a></div>
+        </div>
+        <div class="notice mb-4" th:if="${isCustomer}">
+            <i class="bi bi-shield-check"></i>
+            <div>Warnings are checked against your saved food profile. <a class="fw-bold" th:href="@{/profile}">Review profile</a></div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-4 js-dish" th:each="v : ${menu}"
+                 th:attr="data-cuisine=${v.item().cuisine()},data-safe=${v.safe()}">
+                <div class="dish" th:classappend="${v.blocked()} ? 'is-blocked'"
+                     th:with="tags=${v.item().dietTags().![name()]}, spice=${v.item().spiceLevel().ordinal()}">
+                    <div class="dish-top">
+                        <h2 class="dish-name">
+                            <span class="veg-mark" title="Vegetarian" th:if="${tags.contains('VEGETARIAN') or tags.contains('VEGAN')}"></span>
+                            <span th:text="${v.item().name()}">Dish</span>
+                        </h2>
+                        <span class="dish-price" th:text="|₹${#numbers.formatDecimal(v.item().price(), 1, 2)}|">₹0</span>
+                    </div>
+                    <div class="dish-meta">
+                        <span th:text="${v.item().cuisine()}">Cuisine</span>
+                        <span class="spice" th:if="${spice > 0}">
+                            <i class="bi bi-fire" th:each="n : ${#numbers.sequence(1, spice)}"></i>
+                            <span th:text="${#strings.capitalize(v.item().spiceLevel().name().toLowerCase().replace('_', ' '))}">Mild</span>
+                        </span>
+                        <span th:if="${spice == 0}">Not spicy</span>
+                    </div>
+                    <p class="dish-desc" th:text="${v.item().description()}">Description</p>
+
+                    <div class="tag-row" th:if="${!v.item().declaredAllergens().isEmpty()}">
+                        <span class="tag-label">Contains</span>
+                        <span class="tag contains" th:each="a : ${v.item().declaredAllergens()}" th:text="${a}">x</span>
+                    </div>
+                    <div class="tag-row" th:if="${!v.item().mayContainAllergens().isEmpty()}">
+                        <span class="tag-label">May contain</span>
+                        <span class="tag may" th:each="a : ${v.item().mayContainAllergens()}" th:text="${a}">x</span>
+                    </div>
+                    <div class="tag-row" th:if="${!v.item().dietTags().isEmpty()}">
+                        <span class="tag diet" th:each="d : ${v.item().dietTags()}" th:text="${d.name().replace('_', ' ')}">DIET</span>
+                    </div>
+
+                    <div class="warn-line" th:each="w : ${v.warnings()}">
+                        <span th:replace="~{fragments/layout :: warningBadge(${w.type()})}"></span>
+                        <span th:text="${w.message()}">message</span>
+                    </div>
+                    <div th:if="${isCustomer and v.safe()}">
+                        <span class="safe-pill"><i class="bi bi-shield-check"></i> No warnings for you</span>
+                    </div>
+
+                    <div class="dish-actions" th:if="${isCustomer}">
+                        <form th:action="@{/cart/add}" method="post" class="js-add-form"
+                              th:attr="data-warning=${v.warningSummary()}">
+                            <input type="hidden" name="menuItemId" th:value="${v.item().id()}">
+                            <input type="hidden" name="restaurantId" th:value="${restaurant.id()}">
+                            <div class="qty" th:unless="${v.blocked()}">
+                                <button type="button" data-step="-1" aria-label="Decrease quantity"><i class="bi bi-dash"></i></button>
+                                <input type="number" name="quantity" value="1" min="1" max="20" aria-label="Quantity">
+                                <button type="button" data-step="1" aria-label="Increase quantity"><i class="bi bi-plus"></i></button>
+                            </div>
+                            <input type="hidden" name="quantity" value="1" th:if="${v.blocked()}">
+                            <button type="submit" class="btn btn-success" th:disabled="${v.blocked()}">
+                                <span th:if="${!v.blocked()}"><i class="bi bi-bag-plus me-1"></i>Add to cart</span>
+                                <span th:if="${v.blocked()}"><i class="bi bi-slash-circle me-1"></i>Not safe for you</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(menu)}">
+            <i class="bi bi-egg-fried"></i>
+            <h2>No dishes are available right now</h2>
+            <p class="mb-0">Please check back soon.</p>
+        </div>
+        <div class="empty-state d-none" id="dishEmpty">
+            <i class="bi bi-search"></i>
+            <h2>No dishes match your filters</h2>
+            <p class="mb-0">Try clearing the search or turning off the warning filter.</p>
+        </div>
+    </div>
+</main>
+
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="warningModalTitle"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Check before adding</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="warningModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="warningConfirm">Add anyway</button>
+            </div>
+        </div>
+    </div>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

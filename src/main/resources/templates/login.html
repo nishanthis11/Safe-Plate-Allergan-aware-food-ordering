@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Log in')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container auth-page">
+    <div class="auth-shell">
+        <aside class="auth-aside">
+            <div>
+                <h2>Welcome back to safer ordering</h2>
+                <p>Log in to see dishes checked against your allergies and diet.</p>
+                <ul class="auth-points">
+                    <li><i class="bi bi-shield-check"></i><span>Every dish is checked against your food profile</span></li>
+                    <li><i class="bi bi-bag-check"></i><span>Your cart is re-checked at checkout</span></li>
+                    <li><i class="bi bi-clock-history"></i><span>Track every order from kitchen to door</span></li>
+                </ul>
+            </div>
+            <small class="text-white-50">SafePlate</small>
+        </aside>
+        <section class="auth-form">
+            <h1>Log in</h1>
+            <p class="text-muted mb-4">Enter your details to continue.</p>
+            <div class="alert alert-danger" th:if="${param.error}">Invalid email or password, or the account is locked or disabled.</div>
+            <div class="alert alert-info" th:if="${param.logout}">You have been logged out.</div>
+            <div class="alert alert-success" th:if="${param.registered}">Account created. You can log in now.</div>
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="username" name="username" placeholder="you@example.com" required autofocus autocomplete="username">
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="pw-field">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Your password" required autocomplete="current-password">
+                        <button type="button" class="pw-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success btn-lg w-100">Log in</button>
+                <p class="small mt-4 mb-0 text-center text-muted">New here? <a class="fw-bold" th:href="@{/register}">Create an account</a></p>
+            </form>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

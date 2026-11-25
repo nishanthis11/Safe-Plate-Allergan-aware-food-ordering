@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sign up')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container auth-page">
+    <div class="auth-shell">
+        <aside class="auth-aside">
+            <div>
+                <h2>Eat well, without the worry</h2>
+                <p>Create your account, then tell us about your allergies and diet once.</p>
+                <ul class="auth-points">
+                    <li><i class="bi bi-person-vcard"></i><span>Save your allergies, diet and spice level</span></li>
+                    <li><i class="bi bi-exclamation-triangle"></i><span>See clear warnings on every menu</span></li>
+                    <li><i class="bi bi-lock"></i><span>Your food profile stays private to you</span></li>
+                </ul>
+            </div>
+            <small class="text-white-50">SafePlate</small>
+        </aside>
+        <section class="auth-form">
+            <h1>Create your account</h1>
+            <p class="text-muted mb-4">It only takes a minute.</p>
+            <form th:action="@{/register}" th:object="${form}" method="post" novalidate>
+                <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                    <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">error</div>
+                </div>
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">Full name</label>
+                    <input type="text" class="form-control" th:field="*{fullName}" th:errorclass="is-invalid" autocomplete="name">
+                    <div class="invalid-feedback" th:errors="*{fullName}"></div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-7">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" th:field="*{email}" th:errorclass="is-invalid" autocomplete="email">
+                        <div class="invalid-feedback" th:errors="*{email}"></div>
+                    </div>
+                    <div class="col-sm-5">
+                        <label for="phone" class="form-label">Phone <span class="text-muted fw-normal">(optional)</span></label>
+                        <input type="text" class="form-control" th:field="*{phone}" th:errorclass="is-invalid" autocomplete="tel">
+                        <div class="invalid-feedback" th:errors="*{phone}"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="pw-field">
+                        <input type="password" class="form-control" th:field="*{password}" th:errorclass="is-invalid" autocomplete="new-password">
+                        <button type="button" class="pw-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        <div class="invalid-feedback" th:errors="*{password}"></div>
+                    </div>
+                    <div class="form-text">At least 8 characters with upper case, lower case, a digit and a special character.</div>
+                </div>
+                <div class="mb-4">
+                    <label for="confirmPassword" class="form-label">Confirm password</label>
+                    <div class="pw-field">
+                        <input type="password" class="form-control" th:field="*{confirmPassword}" th:errorclass="is-invalid" autocomplete="new-password">
+                        <button type="button" class="pw-toggle" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success btn-lg w-100">Create account</button>
+                <p class="small mt-4 mb-0 text-center text-muted">Already have an account? <a class="fw-bold" th:href="@{/login}">Log in</a></p>
+            </form>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Menu item')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-3" th:text="${itemId == null} ? 'New menu item' : 'Edit menu item'">Menu item</h1>
+    <form th:object="${menuForm}" th:action="${itemId == null} ? @{/manager/menu} : @{/manager/menu/{id}(id=${itemId})}"
+          method="post" class="card card-body" novalidate>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="name">Name</label>
+                <input class="form-control" th:field="*{name}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{name}"></div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="price">Price (&#8377;)</label>
+                <input class="form-control" type="number" step="0.01" min="0.01" th:field="*{price}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{price}"></div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="cuisine">Cuisine</label>
+                <input class="form-control" th:field="*{cuisine}" th:errorclass="is-invalid">
+                <div class="invalid-feedback" th:errors="*{cuisine}"></div>
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" rows="2" th:field="*{description}"></textarea>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="spiceLevel">Spice level</label>
+                <select class="form-select" th:field="*{spiceLevel}">
+                    <option th:each="s : ${spiceLevels}" th:value="${s}" th:text="${s}">x</option>
+                </select>
+            </div>
+            <div class="col-md-9 d-flex align-items-end gap-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" th:field="*{available}">
+                    <label class="form-check-label" for="available">Available to customers</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" th:field="*{allergenInfoComplete}">
+                    <label class="form-check-label" for="allergenInfoComplete">Ingredient and allergen details are complete and verified</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6">Declared allergens (contains)</h2>
+                <div class="form-check form-check-inline" th:each="a : ${allergens}">
+                    <input class="form-check-input" type="checkbox" th:field="*{declaredAllergenIds}" th:value="${a.id()}">
+                    <label class="form-check-label" th:for="${#ids.prev('declaredAllergenIds')}" th:text="${a.name()}">x</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6">May contain (cross-contact)</h2>
+                <div class="form-check form-check-inline" th:each="a : ${allergens}">
+                    <input class="form-check-input" type="checkbox" th:field="*{mayContainAllergenIds}" th:value="${a.id()}">
+                    <label class="form-check-label" th:for="${#ids.prev('mayContainAllergenIds')}" th:text="${a.name()}">x</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6">Suitable for diets</h2>
+                <div class="form-check form-check-inline" th:each="d : ${dietTypes}">
+                    <input class="form-check-input" type="checkbox" th:field="*{dietTags}" th:value="${d}">
+                    <label class="form-check-label" th:for="${#ids.prev('dietTags')}" th:text="${d.name().replace('_', ' ')}">x</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6">Ingredients</h2>
+                <div class="form-check form-check-inline" th:each="i : ${ingredients}">
+                    <input class="form-check-input" type="checkbox" th:field="*{ingredientIds}" th:value="${i.id()}">
+                    <label class="form-check-label" th:for="${#ids.prev('ingredientIds')}" th:text="${i.name()}">x</label>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-success" type="submit">Save item</button>
+            <a class="btn btn-outline-secondary" th:href="@{/manager/menu}">Cancel</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

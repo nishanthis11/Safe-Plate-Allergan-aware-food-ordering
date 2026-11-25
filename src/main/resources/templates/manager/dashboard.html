@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manager dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-3">Restaurant dashboard</h1>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body">
+            <div class="small text-muted">Revenue</div>
+            <div class="display-6" th:text="|₹${#numbers.formatDecimal(stats.revenue(), 1, 0)}|">0</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body">
+            <div class="small text-muted">Total orders</div><div class="display-6" th:text="${stats.totalOrders()}">0</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body">
+            <div class="small text-muted">Active orders</div><div class="display-6" th:text="${stats.activeOrders()}">0</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body">
+            <div class="small text-muted">Safety warnings</div>
+            <div class="display-6" th:text="${stats.totalWarnings()}">0</div></div></div></div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7"><div class="card"><div class="card-body"><h2 class="h6">Revenue, last 7 days</h2><canvas id="salesChart" height="140"></canvas></div></div></div>
+        <div class="col-lg-5"><div class="card"><div class="card-body"><h2 class="h6">Orders by status</h2><canvas id="statusChart" height="200"></canvas></div></div></div>
+        <div class="col-lg-7"><div class="card"><div class="card-body"><h2 class="h6">Top items</h2><canvas id="topItemsChart" height="140"></canvas></div></div></div>
+        <div class="col-lg-5"><div class="card"><div class="card-body"><h2 class="h6">Warnings by type</h2><canvas id="warningChart" height="200"></canvas></div></div></div>
+    </div>
+    <h2 class="h5">Latest orders</h2>
+    <div class="table-responsive">
+        <table class="table table-sm bg-white border">
+            <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th class="text-end">Total</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="o : ${orders}">
+                <td th:text="${o.orderNumber()}">SF-1</td>
+                <td th:text="${o.customerName()}">Name</td>
+                <td><span th:replace="~{fragments/layout :: statusBadge(${o.status()})}"></span></td>
+                <td class="text-end" th:text="|₹${#numbers.formatDecimal(o.total(), 1, 2)}|">0</td>
+                <td><a class="btn btn-outline-success btn-sm" th:href="@{/manager/orders/{id}(id=${o.id()})}">Open</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">window.STATS = /*[[${stats}]]*/ null;</script>
+<script th:src="@{/js/charts.js}"></script>
+</body>
+</html>

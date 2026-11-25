@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Checkout')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="page-head">
+        <div>
+            <h1>Checkout</h1>
+            <p>Confirm your delivery details and payment.</p>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/cart}"><i class="bi bi-arrow-left me-1"></i>Back to cart</a>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <form th:action="@{/checkout}" th:object="${form}" method="post" class="card card-body">
+                <div class="step-head"><span class="n">1</span><h2>Delivery address</h2></div>
+                <div class="alert alert-secondary" th:if="${#lists.isEmpty(addresses)}">
+                    You have no saved address. <a class="fw-bold" th:href="@{/customer/addresses}">Add one</a> first.
+                </div>
+                <label class="choice-card" th:each="a : ${addresses}" th:for="${'addr' + a.id()}">
+                    <input class="form-check-input" type="radio" name="addressId" th:id="${'addr' + a.id()}"
+                           th:value="${a.id()}" th:checked="${a.defaultAddress()}" required>
+                    <span>
+                        <strong th:text="${a.label()}">Home</strong>
+                        <span class="badge text-bg-light border ms-1" th:if="${a.defaultAddress()}">Default</span>
+                        <span class="d-block small text-muted" th:text="${a.fullAddress()}">address</span>
+                    </span>
+                </label>
+
+                <div class="step-head mt-4"><span class="n">2</span><h2>Payment</h2></div>
+                <div class="mb-2">
+                    <select class="form-select" th:field="*{paymentMethod}" aria-label="Payment method">
+                        <option th:each="m : ${paymentMethods}" th:value="${m}" th:text="${m.name().replace('_', ' ')}">x</option>
+                    </select>
+                    <div class="form-text"><i class="bi bi-info-circle me-1"></i>Sandbox mode: no real payment is taken.</div>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" th:field="*{simulatePaymentFailure}">
+                    <label class="form-check-label small" for="simulatePaymentFailure">Simulate a declined payment (testing)</label>
+                </div>
+
+                <div th:if="${cart.check().hasBlocking()}" class="alert alert-danger">
+                    <strong><i class="bi bi-x-octagon-fill me-1"></i>This order cannot be placed.</strong> It contains items that are not safe for you.
+                    <div class="small" th:each="w : ${cart.check().blockingWarnings()}"
+                         th:text="${w.itemName() + ': ' + w.message()}">warning</div>
+                </div>
+                <div th:if="${cart.check().requiresAcknowledgement()}" class="alert alert-warning">
+                    <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Warnings for this order</strong>
+                    <div class="small mt-2 d-flex gap-2 align-items-start" th:each="w : ${cart.check().warnings()}">
+                        <span th:replace="~{fragments/layout :: warningBadge(${w.type()})}"></span>
+                        <span th:text="${w.itemName() + ': ' + w.message()}">warning</span>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" th:field="*{acknowledgeWarnings}">
+                        <label class="form-check-label" for="acknowledgeWarnings">
+                            I have read these warnings and still want to place this order.
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" id="placeOrderBtn" class="btn btn-success btn-lg"
+                        th:disabled="${cart.check().hasBlocking() or #lists.isEmpty(addresses)}"><i class="bi bi-lock-fill me-2"></i>Place order</button>
+            </form>
+        </div>
+        <div class="col-lg-5">
+            <div class="card summary-card"><div class="card-body">
+                <h2 class="h5">Order summary</h2>
+                <p class="small text-muted mb-3"><i class="bi bi-shop me-1"></i><span th:text="${cart.restaurantName()}">Restaurant</span></p>
+                <div class="summary-row" th:each="i : ${cart.items()}">
+                    <span th:text="${i.quantity() + ' x ' + i.name()}">1 x Dish</span>
+                    <span th:text="|₹${#numbers.formatDecimal(i.lineTotal(), 1, 2)}|">0</span>
+                </div>
+                <hr>
+                <div class="summary-row"><span>Subtotal</span><span th:text="|₹${#numbers.formatDecimal(cart.subtotal(), 1, 2)}|">0</span></div>
+                <div class="summary-row"><span>Tax</span><span th:text="|₹${#numbers.formatDecimal(cart.tax(), 1, 2)}|">0</span></div>
+                <div class="summary-row"><span>Delivery</span><span th:text="|₹${#numbers.formatDecimal(cart.deliveryFee(), 1, 2)}|">0</span></div>
+                <div class="summary-row total"><span>Total</span><span th:text="|₹${#numbers.formatDecimal(cart.total(), 1, 2)}|">0</span></div>
+                <p class="small text-muted mt-3 mb-0">The final price is recalculated by the server when you place the order.</p>
+            </div></div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Orders')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-3">Orders</h1>
+    <p class="text-muted" th:if="${#lists.isEmpty(orders)}">No orders yet.</p>
+    <div class="table-responsive" th:if="${!#lists.isEmpty(orders)}">
+        <table class="table bg-white border">
+            <thead><tr><th>Order</th><th>Customer</th><th>Placed</th><th>Status</th><th>Warnings</th><th class="text-end">Total</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="o : ${orders}">
+                <td th:text="${o.orderNumber()}">SF-1</td>
+                <td th:text="${o.customerName()}">Name</td>
+                <td th:text="${#temporals.format(o.createdAt(), 'dd MMM HH:mm')}">time</td>
+                <td><span th:replace="~{fragments/layout :: statusBadge(${o.status()})}"></span></td>
+                <td><span class="badge text-bg-warning" th:if="${o.warningCount() > 0}" th:text="${o.warningCount()}">1</span></td>
+                <td class="text-end" th:text="|₹${#numbers.formatDecimal(o.total(), 1, 2)}|">0</td>
+                <td><a class="btn btn-outline-success btn-sm" th:href="@{${basePath} + '/orders/' + ${o.id()}}">Open</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

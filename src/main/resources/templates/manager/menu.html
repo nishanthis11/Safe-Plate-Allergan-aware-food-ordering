@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Menu')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Menu items</h1>
+        <a class="btn btn-success" th:href="@{/manager/menu/new}">Add item</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table bg-white border align-middle">
+            <thead><tr><th>Item</th><th>Price</th><th>Allergens</th><th>Info</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${items}">
+                <td><strong th:text="${i.name()}">Dish</strong><div class="small text-muted" th:text="${i.cuisine()}">Cuisine</div></td>
+                <td th:text="|₹${#numbers.formatDecimal(i.price(), 1, 2)}|">0</td>
+                <td class="small">
+                    <span th:text="${#lists.isEmpty(i.declaredAllergens()) ? 'None declared' : #strings.listJoin(i.declaredAllergens(), ', ')}">x</span>
+                    <div class="text-muted" th:if="${!#lists.isEmpty(i.mayContainAllergens())}"
+                         th:text="${'May contain: ' + #strings.listJoin(i.mayContainAllergens(), ', ')}"></div>
+                </td>
+                <td><span class="badge" th:classappend="${i.allergenInfoComplete()} ? 'text-bg-success' : 'text-bg-warning'"
+                          th:text="${i.allergenInfoComplete()} ? 'Complete' : 'Incomplete'">x</span></td>
+                <td><span class="badge" th:classappend="${i.available()} ? 'text-bg-success' : 'text-bg-secondary'"
+                          th:text="${i.available()} ? 'Available' : 'Hidden'">x</span></td>
+                <td class="text-end">
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/manager/menu/{id}/edit(id=${i.id()})}">Edit</a>
+                    <form class="d-inline" th:action="@{/manager/menu/{id}/availability(id=${i.id()})}" method="post">
+                        <input type="hidden" name="available" th:value="${!i.available()}">
+                        <button class="btn btn-outline-secondary btn-sm" type="submit" th:text="${i.available()} ? 'Hide' : 'Show'">Hide</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

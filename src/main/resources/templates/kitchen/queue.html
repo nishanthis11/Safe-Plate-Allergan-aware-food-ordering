@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Kitchen queue')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-3">Kitchen queue</h1>
+    <p class="text-muted" th:if="${#lists.isEmpty(orders)}">Nothing to prepare right now.</p>
+    <div class="row g-3">
+        <div class="col-md-6 col-lg-4" th:each="o : ${orders}">
+            <div class="card h-100" th:classappend="${o.warningCount() > 0} ? 'border-danger'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <strong th:text="${o.orderNumber()}">SF-1</strong>
+                        <span th:replace="~{fragments/layout :: statusBadge(${o.status()})}"></span>
+                    </div>
+                    <div class="small text-muted" th:text="${#temporals.format(o.createdAt(), 'dd MMM HH:mm')}">time</div>
+                    <div class="mt-2" th:if="${o.warningCount() > 0}">
+                        <span class="badge text-bg-danger" th:text="${o.warningCount() + ' safety warning(s)'}">1</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <a class="btn btn-success btn-sm" th:href="@{${basePath} + '/orders/' + ${o.id()}}">Open order</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

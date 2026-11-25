@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Food profile')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-1">My food profile</h1>
+    <p class="text-muted">Only you can see and edit this profile. It is used to check every dish before you order.</p>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <section class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5">Allergies</h2>
+                    <p class="small text-muted" th:if="${#lists.isEmpty(profile.allergies())}">No allergies saved.</p>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="a : ${profile.allergies()}">
+                            <span><strong th:text="${a.allergenName()}">Peanut</strong>
+                                <span class="badge text-bg-danger ms-1" th:text="${a.severity().name()}">SEVERE</span>
+                                <span class="small text-muted" th:if="${a.notes()}" th:text="${a.notes()}"></span></span>
+                            <form th:action="@{/profile/allergies/{id}/delete(id=${a.id()})}" method="post">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+                            </form>
+                        </li>
+                    </ul>
+                    <form th:action="@{/profile/allergies}" th:object="${allergyForm}" method="post" class="row g-2">
+                        <div class="col-sm-5">
+                            <label class="form-label small" for="allergenId">Allergen</label>
+                            <select class="form-select" th:field="*{allergenId}">
+                                <option th:each="a : ${allergens}" th:value="${a.id()}" th:text="${a.name()}">x</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label small" for="severity">Severity</label>
+                            <select class="form-select" th:field="*{severity}">
+                                <option th:each="s : ${severities}" th:value="${s}" th:text="${s}">x</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small" for="notes">Notes (optional)</label>
+                            <input type="text" class="form-control" th:field="*{notes}" maxlength="300">
+                        </div>
+                        <div class="col-12"><button class="btn btn-success btn-sm" type="submit">Save allergy</button></div>
+                    </form>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <h2 class="h5">Avoided ingredients</h2>
+                    <p class="small text-muted" th:if="${#lists.isEmpty(profile.avoidedIngredients())}">None saved.</p>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="i : ${profile.avoidedIngredients()}">
+                            <span th:text="${i.name()}">Mushroom</span>
+                            <form th:action="@{/profile/avoided/{id}/delete(id=${i.id()})}" method="post">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+                            </form>
+                        </li>
+                    </ul>
+                    <form th:action="@{/profile/avoided}" th:object="${avoidForm}" method="post" class="d-flex gap-2">
+                        <select class="form-select" th:field="*{ingredientId}" aria-label="Ingredient">
+                            <option th:each="i : ${ingredients}" th:value="${i.id()}" th:text="${i.name()}">x</option>
+                        </select>
+                        <button class="btn btn-success btn-sm" type="submit">Add</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+        <div class="col-lg-6">
+            <section class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5">Dietary restrictions</h2>
+                    <p class="small text-muted" th:if="${#lists.isEmpty(profile.dietaryPreferences())}">None saved.</p>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="d : ${profile.dietaryPreferences()}">
+                            <span th:text="${d.dietType().name().replace('_', ' ')}">VEGAN</span>
+                            <span class="badge text-bg-light border" th:text="${d.strict()} ? 'strict' : 'preference'">strict</span>
+                            <form th:action="@{/profile/diets/{id}/delete(id=${d.id()})}" method="post">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+                            </form>
+                        </li>
+                    </ul>
+                    <form th:action="@{/profile/diets}" th:object="${dietForm}" method="post" class="row g-2 align-items-end">
+                        <div class="col-sm-6">
+                            <label class="form-label small" for="dietType">Diet</label>
+                            <select class="form-select" th:field="*{dietType}">
+                                <option th:each="d : ${dietTypes}" th:value="${d}" th:text="${d.name().replace('_', ' ')}">x</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" th:field="*{strict}">
+                                <label class="form-check-label" for="strict">Strict</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-3"><button class="btn btn-success btn-sm" type="submit">Save</button></div>
+                    </form>
+                </div>
+            </section>
+            <section class="card">
+                <div class="card-body">
+                    <h2 class="h5">Taste preferences</h2>
+                    <form th:action="@{/profile/preferences}" th:object="${prefs}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="maxSpiceLevel">Maximum spice level</label>
+                            <select class="form-select" th:field="*{maxSpiceLevel}">
+                                <option th:each="s : ${spiceLevels}" th:value="${s}" th:text="${s}">x</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="favoriteCuisines">Favourite cuisines (comma separated)</label>
+                            <input type="text" class="form-control" th:field="*{favoriteCuisines}" maxlength="300">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" th:field="*{confirmedComplete}">
+                            <label class="form-check-label" for="confirmedComplete">My profile is complete and up to date</label>
+                        </div>
+                        <button class="btn btn-success btn-sm" type="submit">Save preferences</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
